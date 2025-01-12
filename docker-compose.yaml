@@ -11,13 +11,17 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
   kafka:
     image: confluentinc/cp-kafka:latest
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:
@@ -31,11 +35,14 @@ services:
       KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+    volumes:
+      - kafka-data:/var/lib/kafka/data
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:6.0.1
+    container_name: control-center
     hostname: control-center
     depends_on:
       - kafka
@@ -48,3 +55,9 @@ services:
       PORT: 9021
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
+
+volumes:
+  zookeeper-data:
+    driver: local
+  kafka-data:
+    driver: local
